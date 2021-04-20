@@ -11,8 +11,6 @@ namespace StoringPasswordsH4
 
         static void Main(string[] args)
         {
-            
-
             while (true)
             {
                 int option = GetRegisterAndLoginOption();
@@ -29,10 +27,13 @@ namespace StoringPasswordsH4
                     default:
                         break;
                 }
-
-
             }
         }
+
+        /// <summary>
+        /// Selects which input that should be picked.
+        /// </summary>
+        /// <returns>returns the picked option as an int</returns>
         static int GetRegisterAndLoginOption()
         {
             bool inputAccepted = false;
@@ -64,6 +65,9 @@ namespace StoringPasswordsH4
             
         }
 
+        /// <summary>
+        /// Registers a user based on their password and username
+        /// </summary>
         static void RegisterUserGUI()
         {
             Console.Write("Type in your UserName:");
@@ -93,6 +97,9 @@ namespace StoringPasswordsH4
 
         }
 
+        /// <summary>
+        /// Logs in the user based, or sleeps the thread for 5 seconds on failed attempts
+        /// </summary>
         static void LoginUserGUI()
         {
             int maxTries = 5;

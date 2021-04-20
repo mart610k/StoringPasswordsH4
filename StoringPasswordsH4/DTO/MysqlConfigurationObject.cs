@@ -14,6 +14,9 @@ namespace StoringPasswordsH4.DTO
 
         public string Pwd { private set; get; }
 
+        /// <summary>
+        /// Uses the other properties to build up a connection string.
+        /// </summary>
         public string ConnectionString
         {
             get

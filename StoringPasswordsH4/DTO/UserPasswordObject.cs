@@ -4,6 +4,9 @@ using System.Text;
 
 namespace StoringPasswordsH4.DTO
 {
+    /// <summary>
+    /// Maintains the passwords and salt in one location for use in other parts of the code.
+    /// </summary>
     class UserPasswordObject
     {
         public byte[] HashedPassword { get; private set; }
