@@ -70,19 +70,15 @@ namespace StoringPasswordsH4.Service
                 salt = GenerateSalt(saltSize);
             }
 
-            byte[] passwordBytes = CombineByteArrays(Encoding.UTF8.GetBytes(password), salt);
+            byte[] hashedBytes;
 
-            return new UserPasswordObject(encrypter.ComputeHash(passwordBytes), salt);
-        }
+            using (Rfc2898DeriveBytes hashGenerator = new Rfc2898DeriveBytes(password, salt))
+            {
+                hashGenerator.IterationCount = WorkCount;
+                hashedBytes = hashGenerator.GetBytes(64);
+            }
 
-        private byte[] CombineByteArrays(byte[] firstArray, byte[] secondArray)
-        {
-            byte[] combinedArray = new byte[firstArray.Length + secondArray.Length];
-
-            firstArray.CopyTo(combinedArray, 0);
-            secondArray.CopyTo(combinedArray, firstArray.Length);
-
-            return combinedArray;
+            return new UserPasswordObject(hashedBytes, salt);
         }
 
         private byte[] GenerateSalt(int saltSize)
