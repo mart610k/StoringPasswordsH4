@@ -11,6 +11,10 @@ namespace StoringPasswordsH4.Service
     class FileService
     {
 
+        /// <summary>
+        /// Pulls the database config from the file system to be used for the authentication towards the database
+        /// </summary>
+        /// <returns>the object with infomation the required data values in a connection string</returns>
         public static MysqlConfigurationObject GetDatabaseConfig()
         {
             string workingDirectory = Directory.GetCurrentDirectory();

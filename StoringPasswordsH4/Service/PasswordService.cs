@@ -13,10 +13,12 @@ namespace StoringPasswordsH4.Service
     class PasswordService
     {
         RNGCryptoServiceProvider rngSecure = new RNGCryptoServiceProvider();
-        SHA256 encrypter = SHA256.Create();
         MysqlConfigurationObject mysql;
         int WorkCount { get; set; }
 
+        /// <summary>
+        /// Gets the mysql connection settings and the amount of work there should be put in each time a hash is calculated
+        /// </summary>
         public PasswordService()
         {
             mysql = FileService.GetDatabaseConfig();
@@ -24,7 +26,12 @@ namespace StoringPasswordsH4.Service
             WorkCount = 1000;
         }
 
-
+        /// <summary>
+        /// Registers a user from an ID and password, handles the whole situation from start to finish
+        /// </summary>
+        /// <param name="userId">Username of the user</param>
+        /// <param name="plaintextPass">plain text of the password</param>
+        /// <returns>if the registration was sucessfull</returns>
         public bool RegisterUser(string userId, string plaintextPass)
         {
             UserPasswordObject userPasswordObject = HashPassword(plaintextPass);
@@ -32,6 +39,12 @@ namespace StoringPasswordsH4.Service
             return CreateUserAndPassword(userId, userPasswordObject);
         }
 
+        /// <summary>
+        /// Create the user and saves the password, salt and user id on the database
+        /// </summary>
+        /// <param name="userId">The user ID</param>
+        /// <param name="userPassword">Object consisting of salt and password</param>
+        /// <returns>if the action was sucessfull</returns>
         public bool CreateUserAndPassword(string userId, UserPasswordObject userPassword)
         {
             MySqlConnection conn = new MySqlConnection(mysql.ConnectionString);
@@ -70,7 +83,13 @@ namespace StoringPasswordsH4.Service
         }
 
 
-        public UserPasswordObject HashPassword(string password, byte[] salt = null)
+        /// <summary>
+        /// Hashes the incoming password, if incoming bytes in salt it will use those bytes as part of the hash
+        /// </summary>
+        /// <param name="plaintextPassword">password in plain text to encrypt</param>
+        /// <param name="salt">if salt is provided it will hash using the salt, otherwise it will generate a new salt</param>
+        /// <returns>the password and salt used for the hashed password</returns>
+        public UserPasswordObject HashPassword(string plaintextPassword, byte[] salt = null)
         {
             int saltSize = 16;
             if(salt == null)
@@ -80,7 +99,7 @@ namespace StoringPasswordsH4.Service
 
             byte[] hashedBytes;
 
-            using (Rfc2898DeriveBytes hashGenerator = new Rfc2898DeriveBytes(password, salt))
+            using (Rfc2898DeriveBytes hashGenerator = new Rfc2898DeriveBytes(plaintextPassword, salt))
             {
                 hashGenerator.IterationCount = WorkCount;
                 hashedBytes = hashGenerator.GetBytes(64);
@@ -89,6 +108,11 @@ namespace StoringPasswordsH4.Service
             return new UserPasswordObject(hashedBytes, salt);
         }
 
+        /// <summary>
+        /// Generates a salt using the secure random generator
+        /// </summary>
+        /// <param name="saltSize">The salt size to generate</param>
+        /// <returns>Filled byte array with random bytes</returns>
         private byte[] GenerateSalt(int saltSize)
         {
             byte[] saltBytes = new byte[saltSize];
@@ -98,7 +122,12 @@ namespace StoringPasswordsH4.Service
             return saltBytes;
         }
 
-
+        /// <summary>
+        /// verifies the password coming in to the hashed password and salt incoming in the method
+        /// </summary>
+        /// <param name="plainPassword">the plain password of the user</param>
+        /// <param name="passwordObject">the hashed version of the password and salt</param>
+        /// <returns>if the password and hashed password was equal</returns>
         public bool VerifyPassword(string plainPassword,UserPasswordObject passwordObject)
         {
             if(passwordObject.HashedPassword.Length == HashPassword(plainPassword, passwordObject.Salt).HashedPassword.Length &&
@@ -109,7 +138,13 @@ namespace StoringPasswordsH4.Service
             return false;
         }
 
-        public bool CheckUserCredentials(string userID, string plainPass)
+        /// <summary>
+        /// Checks the user credentials twoards the database returns if the user was verified
+        /// </summary>
+        /// <param name="userID">the users ID</param>
+        /// <param name="plainPassword">Plain password of6 the user</param>
+        /// <returns>If the users credentials was verified</returns>
+        public bool CheckUserCredentials(string userID, string plainPassword)
         {
             UserPasswordObject userPasswordObject = GetUserPassword(userID);
 
@@ -117,7 +152,7 @@ namespace StoringPasswordsH4.Service
             {
                 return false;
             }
-            bool verifyPasswordResult = VerifyPassword(plainPass, userPasswordObject);
+            bool verifyPasswordResult = VerifyPassword(plainPassword, userPasswordObject);
 
             if (verifyPasswordResult)
             {
@@ -130,7 +165,11 @@ namespace StoringPasswordsH4.Service
                    
         }
 
-
+        /// <summary>
+        /// Gets a users hashed password
+        /// </summary>
+        /// <param name="userId">The user ID to get the hashed password</param>
+        /// <returns>null if the user does not exist otherwise the data existing on the database</returns>
         public UserPasswordObject GetUserPassword(string userId)
         {
             MySqlConnection conn = new MySqlConnection(mysql.ConnectionString);
@@ -173,8 +212,5 @@ namespace StoringPasswordsH4.Service
 
             return userPasswordObject;
         }
-
-
-
     }
 }
