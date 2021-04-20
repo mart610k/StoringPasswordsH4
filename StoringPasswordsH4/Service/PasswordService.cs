@@ -24,6 +24,14 @@ namespace StoringPasswordsH4.Service
             WorkCount = 1000;
         }
 
+
+        public bool RegisterUser(string userId, string plaintextPass)
+        {
+            UserPasswordObject userPasswordObject = HashPassword(plaintextPass);
+
+            return CreateUserAndPassword(userId, userPasswordObject);
+        }
+
         public bool CreateUserAndPassword(string userId, UserPasswordObject userPassword)
         {
             MySqlConnection conn = new MySqlConnection(mysql.ConnectionString);
